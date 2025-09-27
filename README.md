@@ -14,7 +14,7 @@
 
 ### 0-1.
 
-![My Logo](PRJ-T우주Q&A-0927.png)
+![My Logo](PRJ-T우주QnA-0927.png)
 
 
 
