@@ -61,6 +61,7 @@ T우주 외부 제공 서비스는 크게 상품 및 계약의 상태를 조회�
 
 ### 4-1. 그래프 구성
 다음은 그래프 구성 결과를 다음 명령어로 출력한 결과임
+
 ```display(Image(graph.get_graph().draw_mermaid_png()))```
 
 ![My Logo](PRJ-그래프구조출력-0928.png)
