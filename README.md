@@ -80,3 +80,19 @@ T우주 외부 제공 서비스는 크게 상품 및 계약의 상태를 조회�
 ``` http://127.0.0.1:XXXX```
 
 ![My Logo](images/PRJ-실행방법-1001.png)
+
+### 6-2. 데이터 적재 방법
+1.  제휴/고객 데이터 적재 : SQLite DB 적재 - 터미널에서 다음 명령어 수행
+
+``` uv run python src/load_affiliate_data.py```
+``` uv run python src/load_member_data.py```  
+
+2.  채널 데이터 적재 : Chroma DB 적재 - 터미널에서 다음 명령어 수행
+
+``` uv run python src/load_channel_data.py```
+
+3.  프롬프트 등록 : Langfuze 온라인 등록 - 터미널에서 다음 명령어 수행
+
+``` uv run python src/load_langfuze_data.py```
+
+![My Logo](images/PRJ-데이터준비-1002.png)
