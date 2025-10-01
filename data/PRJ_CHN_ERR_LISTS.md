@@ -1,35 +1,35 @@
 
-### CASE01 - 403/Forbidden
-## http 상태 코드
+## CASE01 - 403/Forbidden
+### http 상태 코드
 403
-## http 상태 메시지
+### http 상태 메시지
 Forbidden
-## http 응답 바디
+### http 응답 바디
 {
   "message" : "Forbidden",
   "status" : 403
 }
-## 발생원인
+### 발생원인
 API KEY를 누락한 요청
-## 해결방안
+### 해결방안
 HTTP 헤더에 “x-api-key” 필드를 추가하고 발급받은 API KEY를 값으로 사용하여 요청 전달하도록 수정
 API KEY는 개발자포털에서 생성한 애플리케이션의 “API KEY” 속성 탭을 통해 확인
 
 
 
-### CASE02 - 403/Forbidden
-## http 상태 코드
+## CASE02 - 403/Forbidden
+### http 상태 코드
 403
-## http 상태 메시지
+### http 상태 메시지
 Forbidden
-## http 응답 바디
+### http 응답 바디
 {
   "message"" : "Forbidden",
   "status"" : 403
 }
-## 발생원인
+### 발생원인
 유효하지 않은 API KEY를 이용한 요청
-## 해결방안
+### 해결방안
 API KEY는 제휴사마다 발급된 값이 다르고 같은 제휴사라도 환경(STG/PRD)에 따라 값이 상이함
 개발자포털에 발급된 API KEY가 정상적으로 요청시 사용되었는지 확인
 
