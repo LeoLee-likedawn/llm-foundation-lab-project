@@ -37,7 +37,7 @@ graph = builder.compile()
 # 그래프 시각화
 #display(Image(graph.get_graph().draw_mermaid_png()))
 
-def call_my_service(message, history):
+def call_me(message, history):
 
     history = history or []
     

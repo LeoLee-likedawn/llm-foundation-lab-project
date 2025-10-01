@@ -1,6 +1,6 @@
-import sys
 import gradio as gr
-from start_service import call_my_service
+from start_service import call_me
+from funny import call_funny
 
 def main():
 
@@ -17,7 +17,12 @@ def main():
             """
             <style>
                 body {
-                    background-color: #aee6f9; /* 파스텔톤 하늘색 배경 */
+                    background-color: #aee6f9; /* 파스텔톤 하늘색 배경 */                    
+                }
+                .gradio-container {
+                    background: url("https://raw.githubusercontent.com/LeoLee-likedawn/llm-foundation-lab-project/main/images/PRJ-%E1%84%87%E1%85%A2%E1%84%80%E1%85%A7%E1%86%BC%E1%84%92%E1%85%AA%E1%84%86%E1%85%A7%E1%86%AB-1001.png") 
+                                no-repeat center center fixed !important;
+                    background-size: cover !important;
                 }
                 .big-chatbot {
                     height: 500px !important;
@@ -39,15 +44,15 @@ def main():
                     font-size: 12px !important;
                     border-radius: 12px;
                     padding: 8px 12px;
-                }
+                }                
             </style>
-            """
+            """         
         )
-
+        
         gr.Markdown(
             """
             <div style='display:flex; align-items:center; justify-content:center; gap:10px;'>
-                <img src="https://github.com/LeoLee-likedawn/llm-foundation-lab-project/raw/main/images/tuniverse.png" width="40" height="40" style="border-radius:50%;" />
+                <img src="https://github.com/LeoLee-likedawn/llm-foundation-lab-project/raw/main/images/icons/tuniverse.png" width="40" height="40" style="border-radius:50%;" />
                 <h1 style='margin:0; font-size:24px;'>T우주 연동 Q&A 서비스</h1>
             </div>
             <p style='text-align:center; font-size:16px; color:gray;'>
@@ -60,7 +65,7 @@ def main():
         chatbot_ui = gr.Chatbot(
             elem_classes="big-chatbot",
             label="대화창",
-            avatar_images=("https://raw.githubusercontent.com/LeoLee-likedawn/llm-foundation-lab-project/main/images/user.png", "https://raw.githubusercontent.com/LeoLee-likedawn/llm-foundation-lab-project/main/images/tbot.png"),  # 사용자/봇 아바타
+            avatar_images=("https://raw.githubusercontent.com/LeoLee-likedawn/llm-foundation-lab-project/main/images/icons/user.png", "https://raw.githubusercontent.com/LeoLee-likedawn/llm-foundation-lab-project/main/images/icons/tbot.png"),  # 사용자/봇 아바타
             height=500,
         )
         
@@ -71,12 +76,12 @@ def main():
         )
         clear = gr.Button("Clear")
 
-        msg.submit(call_my_service, [msg, chatbot_ui], [chatbot_ui, chatbot_ui])
+        msg.submit(call_me, [msg, chatbot_ui], [chatbot_ui, chatbot_ui])
+        #msg.submit(call_funny, [msg, chatbot_ui], [chatbot_ui, chatbot_ui])
         msg.submit(lambda: "", None, msg)
         clear.click(lambda: None, None, chatbot_ui)
 
         demo.launch()
-
 
 if __name__ == "__main__":
     main()
