@@ -1,0 +1,128 @@
+from common import ServiceState, f_print_log
+from common import DB_TUNIVERSE
+
+from typing import List, TypedDict
+from langchain_community.utilities import SQLDatabase
+from langchain_openai import ChatOpenAI
+from langchain.chains import create_sql_query_chain
+from langchain_core.prompts import ChatPromptTemplate
+from typing import Annotated, TypedDict
+from langchain_core.prompts import ChatPromptTemplate
+from typing_extensions import TypedDict, Annotated
+from langchain_community.tools import QuerySQLDatabaseTool
+
+# LLM 인스턴스 생성
+llm = ChatOpenAI(model="gpt-4.1-mini")
+
+class QueryOutput(TypedDict):
+    """Generated SQL query."""
+    query: Annotated[str, ..., "Syntactically valid SQL query."]
+    result: Annotated[str, ..., "Result of the query."]
+
+
+def aff_svc_qna(state: ServiceState) -> ServiceState:
+    query_prompt_template = ChatPromptTemplate.from_messages([
+        ("system", 
+        """
+        당신은 SQL 데이터베이스와 상호작용하도록 설계된 에이전트입니다.
+        입력된 질문을 기반으로 구문적으로 올바른 {dialect} 쿼리를 작성하고 실행한 뒤, 실행 결과를 답변으로 반환해야 합니다.
+        
+        입력된 질문으로 쿼리를 작성할 때에는 반드시 아래에서 제공하는 컬럼명과 컬럼값에 의미와 참고사항을 고려하여 작성해야 합니다.
+        "-" 기호 뒤에 나오는 값은 테이블의 컬럼명과 그 의미와 참고사항입니다. (예시 : - 컬럼명 : 의미 - 참고사항)
+        "---" 기호는 바로 위 컬럼의 값으로 등장할 수 있는 값과 그 의미입니다. (예시 : --- 컬럼값 : 의미 - 참고사항)
+        - AUDIT_DTM : 연동이력 발생일시
+        - AUDIT_ID : 처리자ID
+        - MBR_NUM : 고객번호
+        - MBR_NM : 고객명
+        - CTR_NUM : 계약번호
+        - CTR_SVC_NUM : 계약서비스번호
+        - AFFC_BZR_NM : 제휴사명 - 상품을 제공하는 회사명으로 고객이 인지하는 정보와 정확하게 일치하지 않을 수 있으니 유사한 값으로 조회 필요
+        - AFFC_LNKG_TSK_CD : 업무유형
+        --- Q2 : 자동인증가능여부조회
+        --- A1 : 가입준비
+        --- A2 : 가입
+        --- Q3 : 해지가능여부조회
+        --- Z1 : 해지
+        --- Z3 : 해지취소
+        --- CO : 계약연장
+        --- CN : 연장취소
+        - AFFC_LNKG_TRMS_CD : 연동유형
+        --- SB_RQ : T우주 처리 요청
+        --- SB_RS : T우주 처리 결과 응답
+        --- BS_RQ : 제휴사 처리 요청
+        --- BS_RS : 제휴사 처리 결과 응답
+        --- BS_AF : 제휴사 처리 결과 T우주 내부 전달
+        - TRMS_RSLT_CD : 결과코드
+        --- S : 성공
+        --- F : 실패
+        - TRMS_ERR_CD : 에러코드
+        - TRMS_ERR_MSG_CTT : 에러메시지
+        - TRMS_REQ_CNTT : 요청전문 - 요청에 사용된 JSON 형태의 전문
+        - TRMS_RES_CNTT : 응답전문 - 요청에 대한 응답으로 사용된 JSON 형태의 전문
+        - PRD_ID : 패키지ID - 실제 고객이 사용하는 단위 상품들의 묶음 상품의 ID로 10자리 문자열(PR로 시작)로 조회시 정확하게 일치해야 함
+        - PRD_NM : 패키지명 - 계약번호와 연결되는 실제 고객이 사용하는 단위 상품들의 묶음 상품명(패키지 상품명)으로 고객이 인지하는 정보와 정확하게 일치하지 않을 수 있으니 유사한 값으로 조회 필요
+        - SKU_ID : 상품ID - 실제 고객이 사용하는 단위 상품의 ID로 10자리 문자열(SU로 시작)로 조회시 정확하게 일치해야 함
+        - SKU_NM : 상품명 - 계약서비스번호와 매핑되는 실제 고객이 사용하는 단위 상품명으로 고객이 인지하는 정보와 정확하게 일치하지 않을 수 있으니 유사한 값으로 조회 필요
+
+        반환되는 결과의 컬럼명이나 컬럼의 값이 제공된 실제 의미로 대체 가능한 경우 해당 값을 대체하여 결과를 반환해야 합니다.
+        
+        작업을 시작할 때는 항상 데이터베이스의 테이블 목록을 확인해야 합니다.
+        이 단계를 건너뛰지 마십시오.
+        {table_info}
+        """),
+        ("user", 
+        """
+        Question:
+        {query}
+        """)
+    ])
+
+    query_prompt_template.input_schema.model_json_schema()
+
+    # SQLite 데이터베이스 연결
+    db = SQLDatabase.from_uri(f"sqlite:///{DB_TUNIVERSE}")
+
+    if f_print_log:
+        print(f"conect database...DB[{DB_TUNIVERSE}]")
+        # 사용 가능한 테이블 목록 출력
+        print("--- table list ---")
+        tables = db.get_usable_table_names()
+        for table in tables:
+            print("- ",table)
+        print("-"*80)    
+
+    """Generate SQL query to fetch information."""
+    prompt = query_prompt_template.invoke(
+        {
+            "query": state["user_question"],
+            "dialect": db.dialect,
+            "table_info": db.get_table_info(),
+        }
+    )
+    #print("!!! prompt : ", prompt)
+    structured_llm = llm.with_structured_output(QueryOutput)
+
+    sql_query = structured_llm.invoke(prompt)
+    print(f"RES_QRY[{sql_query["query"]}]")
+    print(f"RES_RSLT[{sql_query["result"]}]")
+
+    state['sql_query'] = sql_query
+
+    execute_query_tool = QuerySQLDatabaseTool(db=db)
+
+    #search_results = execute_query_tool.invoke(sql_query)
+    search_results = execute_query_tool.invoke(state)
+
+    #gpt_sql = create_sql_query_chain(llm=llm, db=db)
+
+    # 쿼리 실행
+    #test_question = state['user_question']
+    #gpt_generated_sql = gpt_sql.invoke({'question':test_question})
+    #print(f"Answer (GPT):\n{gpt_generated_sql}")
+    #print("-"*100)
+
+    state['search_results'] = search_results
+    if f_print_log:
+        print ("search_results : ", state['search_results'])
+
+    return state
