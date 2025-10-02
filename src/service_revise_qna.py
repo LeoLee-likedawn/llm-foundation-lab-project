@@ -12,7 +12,10 @@ langfuse = get_client()
 
 def revise_qna(state: ServiceState) -> ServiceState:
     """ 사용자 입력이 질문 영역(제휴사/채널)을 판단하기 부족한 경우 입력 보완 방안을 제공하는 함수 """
-
+    if f_print_log:
+        print("-"*80)
+        print("Start revise_qna...")
+        
     # 사용자의 문의 영역을 분석하기 위한 템플릿
     #revise_templet = """
     #사용자 입력: {user_question}
@@ -67,14 +70,22 @@ def revise_qna(state: ServiceState) -> ServiceState:
             print("Use lanfuse...")
         
         chat_prompt = langfuse.get_prompt("prompt-revise-question-chat", type="chat")
+        if f_print_log:
+            print(f"--- Get prompt from langfuse...PRT[{chat_prompt}]")
 
         langchain_prompt = ChatPromptTemplate.from_messages(
             chat_prompt.get_langchain_prompt()
         )
+        if f_print_log:
+            print(f"--- Generate prompt for langchain...PRT[{langchain_prompt}]")
+            
         langchain_prompt.metadata = {"langfuse_prompt": chat_prompt}   # Langfuse 자동 링크를 위한 메타데이터
 
         # 체인 생성 및 실행
         chain = langchain_prompt | llm
+        if f_print_log:
+            print("Invoke chain...")
+            
         result = chain.invoke(
             input={"user_question": state['user_question']},
             config={"callbacks": [langfuse_handler]}  # Langfuse 트레이싱을 위한 콜백
@@ -83,12 +94,15 @@ def revise_qna(state: ServiceState) -> ServiceState:
     else:
         revise_prompt = ChatPromptTemplate.from_template(revise_template)
         chain = revise_prompt | llm | StrOutputParser()
+        if f_print_log:
+            print("Invoke chain...")
+            
         result = chain.invoke({"user_question": state['user_question']})
         final_answer = result.strip().lower()
     
     state['final_answer'] = final_answer
     if f_print_log:
-        print ("final_answer : ", state['final_answer'])
+        print ("--- final_answer : ", state['final_answer'])
    
     # 결과를 상태에 업데이트 
     return state

@@ -16,7 +16,7 @@ from typing import List, TypedDict
 f_use_langfuse = False
 
 # 로그 출력 여부
-f_print_log = True
+f_print_log = False
 
 # 최종 결과에 상태 정보 포함 출력 여부
 f_print_state = False
@@ -49,6 +49,8 @@ def create_multiline_text(*args):
 
 def merge_state(state: ServiceState) -> str:
     """ 최종 화면 출력에 STATE 정보를 포함하여 노출하기 위한 텍스트를 생성 """
+    """ f_print_state 값이 True로 설정되면 최종 결과 출력 시 STATE 값도 함께 출력 """
+
     result = create_multiline_text(
         "-----------------------------------------------",
         "   State Info.  ",
@@ -68,6 +70,7 @@ def merge_state(state: ServiceState) -> str:
 
 def show_state(state: ServiceState):
     """ 로그 출력시 전체 STATE 값의 노출이 필요한 경우 호출"""
+
     print("-"*33, " State Info.  ", "-"*33)
     print("- [___]service_type : ", state["service_type"])
     print("- [___]user_question : ", state["user_question"])

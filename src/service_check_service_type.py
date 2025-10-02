@@ -12,6 +12,9 @@ langfuse = get_client()
 
 def chk_svc_typ(state: ServiceState) -> ServiceState:
     """ 사용자 입력이 질문 영역(제휴사/채널)에 대해 판단하는 함수 """
+    if f_print_log:
+        print("-"*80)
+        print("Start chk_svc_typ...")
 
     # 사용자의 문의 영역을 분석하기 위한 템플릿
     #analyze_template = """
@@ -59,30 +62,42 @@ def chk_svc_typ(state: ServiceState) -> ServiceState:
             print("Use lanfuse...")
 
         chat_prompt = langfuse.get_prompt("prompt-check-service-typ-chat", type="chat")
+        if f_print_log:
+            print(f"--- Get prompt from langfuse...PRT[{chat_prompt}]")
 
         langchain_prompt = ChatPromptTemplate.from_messages(
             chat_prompt.get_langchain_prompt()
         )
+        if f_print_log:
+            print(f"--- Generate prompt for langchain...PRT[{langchain_prompt}]")
 
         langchain_prompt.metadata = {"langfuse_prompt": chat_prompt}   # Langfuse 자동 링크를 위한 메타데이터
 
         # 체인 생성 및 실행
         chain = langchain_prompt | llm
+        if f_print_log:
+            print("Invoke chain...")
         result = chain.invoke(
             input={"user_question": state['user_question']},
             config={"callbacks": [langfuse_handler]}  # Langfuse 트레이싱을 위한 콜백
         )
         service_type = result
+        if f_print_log:
+            print(f"--- Invoke chain complete...SVC_TYPE[{service_type}]")
     else:
-        print("Not use lanfuse!!!")
         analyze_prompt = ChatPromptTemplate.from_template(analyze_template)
         chain = analyze_prompt | llm | StrOutputParser()
+
+        if f_print_log:
+            print("Invoke chain...")
+        
         result = chain.invoke({"user_question": state['user_question']})
         service_type = result.strip().lower()
+        
+        if f_print_log:
+            print(f"--- Invoke chain complete...SVC_TYPE[{service_type}]")
     
     state['service_type'] = service_type
-    if f_print_log:
-        print ("SVC TYPE : ", state['service_type'])
 
     # 결과를 상태에 업데이트 
     return state

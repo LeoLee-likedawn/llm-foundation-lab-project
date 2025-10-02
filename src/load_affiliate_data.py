@@ -30,6 +30,15 @@ def convert_to_datetime_safely(value):
     except:
         return None
 
+def remove_dot_zero(s: str) -> str:
+    """
+    문자열이 '.0'으로 끝나면 그 부분을 제거한 문자열을 반환합니다.
+    그렇지 않으면 원래 문자열을 그대로 반환합니다.
+    """
+    if s.endswith(".0"):
+        return s[:-2]
+    return s
+
 # 각 컬럼의 데이터 타입 변환
 aff_hist_data['AUDIT_DTM'] = aff_hist_data['AUDIT_DTM'].apply(convert_to_datetime_safely)
 aff_hist_data['AUDIT_ID'] = aff_hist_data['AUDIT_ID'].apply(lambda x: str(x).strip())
@@ -102,23 +111,23 @@ for _, row in aff_hist_data.iterrows():
         INSERT INTO {TABLE_TUNIVERSE_AFF_HIST} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             str(row['AUDIT_DTM']),
-            str(row['AUDIT_ID']),
-            str(row['MBR_NUM']),
-            str(row['MBR_NM']),
-            str(row['CTR_NUM']),
-            str(row['CTR_SVC_NUM']),
-            str(row['AFFC_BZR_NM']),
-            str(row['AFFC_LNKG_TSK_CD']),
-            str(row['AFFC_LNKG_TRMS_CD']),
-            str(row['TRMS_RSLT_CD']),
-            str(row['TRMS_ERR_CD']),
-            str(row['TRMS_ERR_MSG_CTT']),
-            str(row['TRMS_REQ_CNTT']),
-            str(row['TRMS_RES_CNTT']),
-            str(row['PRD_ID']),
-            str(row['PRD_NM']),
-            str(row['SKU_ID']),
-            str(row['SKU_NM'])
+            remove_dot_zero(str(row['AUDIT_ID'])),
+            remove_dot_zero(str(row['MBR_NUM'])),
+            remove_dot_zero(str(row['MBR_NM'])),
+            remove_dot_zero(str(row['CTR_NUM'])),
+            remove_dot_zero(str(row['CTR_SVC_NUM'])),
+            remove_dot_zero(str(row['AFFC_BZR_NM'])),
+            remove_dot_zero(str(row['AFFC_LNKG_TSK_CD'])),
+            remove_dot_zero(str(row['AFFC_LNKG_TRMS_CD'])),
+            remove_dot_zero(str(row['TRMS_RSLT_CD'])),
+            remove_dot_zero(str(row['TRMS_ERR_CD'])),
+            remove_dot_zero(str(row['TRMS_ERR_MSG_CTT'])),
+            remove_dot_zero(str(row['TRMS_REQ_CNTT'])),
+            remove_dot_zero(str(row['TRMS_RES_CNTT'])),
+            remove_dot_zero(str(row['PRD_ID'])),
+            remove_dot_zero(str(row['PRD_NM'])),
+            remove_dot_zero(str(row['SKU_ID'])),
+            remove_dot_zero(str(row['SKU_NM']))
         ))
     except Exception as e:
         print(f"Error inserting row: {row}")

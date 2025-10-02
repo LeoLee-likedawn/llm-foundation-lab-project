@@ -53,7 +53,13 @@ def main():
             """
             <div style='display:flex; align-items:center; justify-content:center; gap:10px;'>
                 <img src="https://github.com/LeoLee-likedawn/llm-foundation-lab-project/raw/main/images/icons/tuniverse.png" width="40" height="40" style="border-radius:50%;" />
-                <h1 style='margin:0; font-size:24px;'>T우주 연동 Q&A 서비스</h1>
+                <h1 style="margin:0; font-size:24px; font-family:'Noto Sans KR', sans-serif; font-weight:700; color:#333333;">
+                    <span style="font-size:28px;">T</span>
+                    <span style="font-size:25px;">우주</span>
+                    <span style="font-size:28px;">연동</span>
+                    <span style="font-size:30px;">Q&amp;A</span>
+                    <span style="font-size:26px;">서비스</span>
+                </h1>
             </div>
             <p style='text-align:center; font-size:16px; color:gray;'>
             

@@ -21,6 +21,10 @@ f_use_agent = False
 @tool
 def error_reason_search(state: ServiceState):
     """채널 연동 관련 오류 원인을 DB에서 조회하고 결과를 반환하는 도구"""
+    if f_print_log:
+        print("-"*80)
+        print("Start TOOL(error_reason_search)...")
+        
     # 벡터 저장소 초기화
     chroma_db = initialize_vector_store()
 

@@ -27,6 +27,24 @@ def convert_to_datetime_safely(value):
     except:
         return None
 
+def remove_dot_zero(s: str) -> str:
+    """
+    문자열이 '.0'으로 끝나면 그 부분을 제거한 문자열을 반환합니다.
+    그렇지 않으면 원래 문자열을 그대로 반환합니다.
+    """
+    if s.endswith(".0"):
+        return s[:-2]
+    return s
+
+def add_leading_zero(s: str) -> str:
+    """
+    문자열이 11자리가 아니고, 0으로 시작하지 않으면
+    문자열 앞에 '0'을 추가해서 반환
+    """
+    if len(s) != 11 and not s.startswith("0"):
+        return "0" + s
+    return s
+
 # 각 컬럼의 데이터 타입 변환
 aff_hist_data['MBR_NUM'] = aff_hist_data['MBR_NUM'].apply(lambda x: str(x).strip())
 aff_hist_data['MBR_NM'] = aff_hist_data['MBR_NM'].apply(lambda x: str(x).strip())
@@ -70,10 +88,10 @@ for _, row in aff_hist_data.iterrows():
         cursor.execute(f"""
         INSERT INTO {TABLE_TUNIVERSE_MEM_LIST} VALUES (?, ?, ?, ?)
         """, (
-            str(row['MBR_NUM']),
-            str(row['MBR_NM']),
-            str(row['MPHON_NUM']),
-            str(row['EMIL_ADDR'])
+            str(remove_dot_zero(row['MBR_NUM'])),
+            str(remove_dot_zero(row['MBR_NM'])),
+            str(add_leading_zero(remove_dot_zero(row['MPHON_NUM']))),
+            str(remove_dot_zero(row['EMIL_ADDR']))
         ))
     except Exception as e:
         print(f"Error inserting row: {row}")

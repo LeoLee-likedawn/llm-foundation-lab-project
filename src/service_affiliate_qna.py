@@ -212,7 +212,7 @@ def aff_svc_qna_using_agent(state: ServiceState) -> ServiceState:
     """ 채널 연동 관련 오류 원인을 조사하는 함수 """
     if f_print_log:
         print("-"*80)
-        print("Start aff_svc_qna_using_agent process")
+        print("Start aff_svc_qna_using_agent...")
     
     # 도구 목록
     tools = [user_search, hist_search]  
@@ -256,7 +256,7 @@ def aff_svc_qna_using_agent(state: ServiceState) -> ServiceState:
 def aff_svc_qna_simple(state: ServiceState) -> ServiceState:
     if f_print_log:
         print("-"*80)
-        print("Start aff_svc_qna_simple process")
+        print("Start aff_svc_qna_simple...")
 
     query_prompt_template = ChatPromptTemplate.from_messages([
         ("system", 
@@ -334,12 +334,16 @@ def aff_svc_qna_simple(state: ServiceState) -> ServiceState:
             "table_info": db.get_table_info(),
         }
     )
-    #print("!!! prompt : ", prompt)
+    
     structured_llm = llm.with_structured_output(QueryOutput)
     if f_print_log:
         print("--- Generate query...")
     sql_query = structured_llm.invoke(prompt)
+
     state['sql_query'] = sql_query["query"]
+    if f_print_log:
+        print(f"--- Generate query complete...SQL[{state['sql_query']}]")
+    #state['sql_query'] = "SELECT * FROM aff_if_hist WHERE CTR_NUM = '3100038198'"
     if f_print_log:
         print(f"--- Generate query complete...SQL[{state['sql_query']}]")
     

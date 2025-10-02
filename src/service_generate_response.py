@@ -13,6 +13,9 @@ langfuse = get_client()
 
 def gen_res(state: ServiceState) -> ServiceState:
     """ 답변 생성 함수 """
+    if f_print_log:
+        print("-"*80)
+        print("Start gen_res...")
 
     # 답변 템플릿
     #response_template = """
@@ -35,21 +38,35 @@ def gen_res(state: ServiceState) -> ServiceState:
             print("Use lanfuse...")
         
         chat_prompt = langfuse.get_prompt("prompt-generate-response-chat", type="chat")
+        if f_print_log:
+            print(f"--- Get prompt from langfuse...PRT[{chat_prompt}]")
+            
         langchain_prompt = ChatPromptTemplate.from_messages(
             chat_prompt.get_langchain_prompt()
         )
+        if f_print_log:
+            print(f"--- Generate prompt for langchain...PRT[{langchain_prompt}]")
+            
         langchain_prompt.metadata = {"langfuse_prompt": chat_prompt}   # Langfuse 자동 링크를 위한 메타데이터
 
         # 체인 생성 및 실행
         chain = langchain_prompt | llm
+        
+        if f_print_log:
+            print("Invoke chain...")
+            
         final_answer = chain.invoke(
             input={"user_question": state['user_question'], "search_results": state['search_results']},
             config={"callbacks": [langfuse_handler]}  # Langfuse 트레이싱을 위한 콜백
         )
+
     else:        
         response_prompt = ChatPromptTemplate.from_template(response_template)
         chain = response_prompt | llm | StrOutputParser()
     
+        if f_print_log:
+            print("Invoke chain...")
+        
         final_answer = chain.invoke(
             {
                 "user_question": state['user_question'],   # 사용자 입력 (상태에서 가져옴)
@@ -59,7 +76,7 @@ def gen_res(state: ServiceState) -> ServiceState:
 
     state['final_answer'] = final_answer
     if f_print_log:
-        print ("final_answer : ", state['final_answer'])
+        print ("--- final_answer : ", state['final_answer'])
 
     # 결과를 상태에 저장
     return state
